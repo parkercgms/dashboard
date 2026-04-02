@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<!-- saved from url=(0228)file:///Users/parkerellis/Library/Application%20Support/Claude/local-agent-mode-sessions/51bb7a07-c1c8-46cb-9e52-e0a415c44c31/5f1c2106-7e88-4110-9c60-9fbf31a42d34/local_0544cc5d-c372-431b-96ed-80f8c1a2a137/outputs/dashboard.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CGMS Property Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f4;
+      color: #1c1c1e;
+      min-height: 100vh;
+      padding: 32px 24px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 32px;
+    }
+    .header h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
+    .header-right { text-align: right; }
+    .header .date { font-size: 13px; color: #8e8e93; }
+    .header .as-of { font-size: 11px; color: #aeaeb2; margin-top: 2px; }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #8e8e93;
+      margin-bottom: 12px;
+    }
+
+    /* SUMMARY */
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+    .summary-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+    .summary-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #aeaeb2;
+      margin-bottom: 4px;
+    }
+    .summary-card .value {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+      color: #1c1c1e;
+    }
+    .summary-card .sub { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+
+    /* OCCUPANCY */
+    .occupancy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 9px;
+      margin-bottom: 36px;
+    }
+    .occ-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .occ-card .prop-name {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: #636366;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .occ-card .occ-value {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+      line-height: 1;
+    }
+    .occ-card .unit-count {
+      font-size: 11px;
+      font-weight: 500;
+      color: #8e8e93;
+      margin-top: 2px;
+    }
+    .unit-count .occupied { color: #34c759; font-weight: 600; }
+    .unit-count .vacant   { color: #ff3b30; font-weight: 600; }
+
+    .occ-bar-bg {
+      height: 4px;
+      background: #e5e5ea;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .occ-bar-fill { height: 100%; border-radius: 99px; }
+
+    .tier-high .occ-value { color: #34c759; }
+    .tier-high .occ-bar-fill { background: #34c759; }
+    .tier-mid  .occ-value  { color: #ff9f0a; }
+    .tier-mid  .occ-bar-fill  { background: #ff9f0a; }
+    .tier-low  .occ-value  { color: #ff3b30; }
+    .tier-low  .occ-bar-fill  { background: #ff3b30; }
+
+    /* DELINQUENCY */
+    .delinquency-list {
+      background: #fff;
+      border-radius: 16px;
+      padding: 4px 24px 8px;
+    }
+    .delq-row {
+      display: grid;
+      grid-template-columns: 200px 1fr 130px;
+      align-items: center;
+      gap: 16px;
+      padding: 9px 0;
+      border-bottom: 1px solid #f2f2f7;
+    }
+    .delq-row:last-child { border-bottom: none; }
+    .delq-row.header-row {
+      padding: 12px 0 8px;
+      border-bottom: 1px solid #e5e5ea;
+    }
+    .delq-row.header-row span {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #aeaeb2;
+    }
+    .delq-row.header-row span:last-child { text-align: right; }
+
+    .delq-prop {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #1c1c1e;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .delq-bar-wrap {
+      position: relative;
+      height: 18px;
+      background: #f2f2f7;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .delq-bar-fill {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      border-radius: 5px;
+    }
+    .fill-good   { background: #34c759; }
+    .fill-warn   { background: #ff9f0a; }
+    .fill-danger { background: #ff3b30; }
+
+    .delq-amounts { text-align: right; }
+    .delq-amounts .pct {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1c1c1e;
+    }
+    .delq-amounts .dollars {
+      font-size: 11px;
+      color: #aeaeb2;
+    }
+
+    /* WATCHLIST */
+    .watchlist {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 36px;
+    }
+    .watch-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      border-top: 3px solid #ff3b30;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .watch-card:first-child {
+      border-top-color: #c0392b;
+      background: #fff8f7;
+    }
+    .watch-rank {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #ff3b30;
+    }
+    .watch-card:first-child .watch-rank { color: #c0392b; }
+    .watch-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1c1c1e;
+      line-height: 1.3;
+    }
+    .watch-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .watch-metric {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+    .watch-metric .m-label { color: #8e8e93; }
+    .watch-metric .m-val {
+      font-weight: 600;
+      color: #1c1c1e;
+    }
+    .watch-metric .m-val.bad { color: #ff3b30; }
+    .watch-metric .m-val.warn { color: #ff9f0a; }
+    .watch-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 3px 8px;
+      border-radius: 99px;
+      background: #fff0ef;
+      color: #ff3b30;
+      align-self: flex-start;
+    }
+    .watch-tag.both { background: #fff0ef; color: #ff3b30; }
+    .watch-tag.occ  { background: #fff6e5; color: #ff9f0a; }
+    .watch-tag.col  { background: #fff6e5; color: #ff9f0a; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>CGMS Property Dashboard</h1>
+    <div class="header-right">
+      <div class="date">April 2026</div>
+      <div class="as-of" id="as-of">Data as of April 2, 2026 at 2:26 PM</div>
+    </div>
+  </div>
+
+  <div class="summary-bar" id="summary">
+      <div class="summary-card">
+        <div class="label">Portfolio Occupancy</div>
+        <div class="value">94.0%</div>
+        <div class="sub">across 37 properties</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Charges Posted</div>
+        <div class="value">$4,468,851</div>
+        <div class="sub">April 2026</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Collected</div>
+        <div class="value">$1,296,590</div>
+        <div class="sub">29.0% of charges</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Outstanding</div>
+        <div class="value">$3,172,262</div>
+        <div class="sub">71.0% remaining</div>
+      </div></div>
+
+  <div class="section-title">Watchlist — 5 Properties Needing Attention</div>
+  <div class="watchlist" id="watchlist">
+        <div class="watch-card">
+          <div class="watch-rank">#1 Worst</div>
+          <div class="watch-name">Colonial Village Apartments</div>
+          <div class="watch-metrics">
+            <div class="watch-metric">
+              <span class="m-label">Occupancy</span>
+              <span class="m-val bad">82.5%</span>
+            </div>
+            <div class="watch-metric">
+              <span class="m-label">Collected</span>
+              <span class="m-val bad">19.2%</span>
+            </div>
+          </div>
+          <span class="watch-tag both">Occ + Collections</span>
+        </div>
+        <div class="watch-card">
+          <div class="watch-rank">#2</div>
+          <div class="watch-name">Hickory Pointe</div>
+          <div class="watch-metrics">
+            <div class="watch-metric">
+              <span class="m-label">Occupancy</span>
+              <span class="m-val warn">91.3%</span>
+            </div>
+            <div class="watch-metric">
+              <span class="m-label">Collected</span>
+              <span class="m-val bad">13.6%</span>
+            </div>
+          </div>
+          <span class="watch-tag col">Low Collections</span>
+        </div>
+        <div class="watch-card">
+          <div class="watch-rank">#3</div>
+          <div class="watch-name">Hunter Oaks Apartments</div>
+          <div class="watch-metrics">
+            <div class="watch-metric">
+              <span class="m-label">Occupancy</span>
+              <span class="m-val warn">92.1%</span>
+            </div>
+            <div class="watch-metric">
+              <span class="m-label">Collected</span>
+              <span class="m-val bad">14.6%</span>
+            </div>
+          </div>
+          <span class="watch-tag col">Low Collections</span>
+        </div>
+        <div class="watch-card">
+          <div class="watch-rank">#4</div>
+          <div class="watch-name">Shadowbrook Townhomes</div>
+          <div class="watch-metrics">
+            <div class="watch-metric">
+              <span class="m-label">Occupancy</span>
+              <span class="m-val warn">90.7%</span>
+            </div>
+            <div class="watch-metric">
+              <span class="m-label">Collected</span>
+              <span class="m-val bad">16.3%</span>
+            </div>
+          </div>
+          <span class="watch-tag col">Low Collections</span>
+        </div>
+        <div class="watch-card">
+          <div class="watch-rank">#5</div>
+          <div class="watch-name">Jackson Heights Residential</div>
+          <div class="watch-metrics">
+            <div class="watch-metric">
+              <span class="m-label">Occupancy</span>
+              <span class="m-val ">97.0%</span>
+            </div>
+            <div class="watch-metric">
+              <span class="m-label">Collected</span>
+              <span class="m-val bad">12.8%</span>
+            </div>
+          </div>
+          <span class="watch-tag col">Low Collections</span>
+        </div></div>
+
+  <div class="section-title">Occupancy — April 2026</div>
+  <div class="occupancy-grid" id="occ-grid">
+        <div class="occ-card tier-low">
+          <div class="prop-name">Fairbrook</div>
+          <div class="occ-value">77.3%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:77.27000000000001%"></div></div>
+          <span class="unit-count"><span class="occupied">34</span> occupied · <span class="vacant">10</span> vacant</span>
+        </div>
+        <div class="occ-card tier-low">
+          <div class="prop-name">Briarcliff South</div>
+          <div class="occ-value">80.8%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:80.77%"></div></div>
+          <span class="unit-count"><span class="occupied">84</span> occupied · <span class="vacant">20</span> vacant</span>
+        </div>
+        <div class="occ-card tier-low">
+          <div class="prop-name">Colonial Village Apartments</div>
+          <div class="occ-value">82.5%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:82.5%"></div></div>
+          <span class="unit-count"><span class="occupied">33</span> occupied · <span class="vacant">7</span> vacant</span>
+        </div>
+        <div class="occ-card tier-mid">
+          <div class="prop-name">High Grove Apartments</div>
+          <div class="occ-value">89.0%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:89%"></div></div>
+          <span class="unit-count"><span class="occupied">89</span> occupied · <span class="vacant">11</span> vacant</span>
+        </div>
+        <div class="occ-card tier-mid">
+          <div class="prop-name">Shadowbrook Townhomes</div>
+          <div class="occ-value">90.7%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:90.71000000000001%"></div></div>
+          <span class="unit-count"><span class="occupied">378</span> occupied · <span class="vacant">39</span> vacant</span>
+        </div>
+        <div class="occ-card tier-mid">
+          <div class="prop-name">Linden Colonial</div>
+          <div class="occ-value">90.7%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:90.74%"></div></div>
+          <span class="unit-count"><span class="occupied">98</span> occupied · <span class="vacant">10</span> vacant</span>
+        </div>
+        <div class="occ-card tier-mid">
+          <div class="prop-name">Hickory Pointe</div>
+          <div class="occ-value">91.3%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:91.25%"></div></div>
+          <span class="unit-count"><span class="occupied">146</span> occupied · <span class="vacant">14</span> vacant</span>
+        </div>
+        <div class="occ-card tier-mid">
+          <div class="prop-name">Shadowood Apartments</div>
+          <div class="occ-value">91.3%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:91.25%"></div></div>
+          <span class="unit-count"><span class="occupied">73</span> occupied · <span class="vacant">7</span> vacant</span>
+        </div>
+        <div class="occ-card tier-mid">
+          <div class="prop-name">Foxhaven Apartments</div>
+          <div class="occ-value">91.7%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:91.67%"></div></div>
+          <span class="unit-count"><span class="occupied">88</span> occupied · <span class="vacant">8</span> vacant</span>
+        </div>
+        <div class="occ-card tier-mid">
+          <div class="prop-name">Willow Glen</div>
+          <div class="occ-value">91.7%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:91.67%"></div></div>
+          <span class="unit-count"><span class="occupied">22</span> occupied · <span class="vacant">2</span> vacant</span>
+        </div>
+        <div class="occ-card tier-mid">
+          <div class="prop-name">Hunter Oaks Apartments</div>
+          <div class="occ-value">92.1%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:92.11%"></div></div>
+          <span class="unit-count"><span class="occupied">58</span> occupied · <span class="vacant">5</span> vacant</span>
+        </div>
+        <div class="occ-card tier-mid">
+          <div class="prop-name">Hickory Forest</div>
+          <div class="occ-value">92.6%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:92.61%"></div></div>
+          <span class="unit-count"><span class="occupied">212</span> occupied · <span class="vacant">17</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Collier Village Apartments</div>
+          <div class="occ-value">93.0%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:93%"></div></div>
+          <span class="unit-count"><span class="occupied">93</span> occupied · <span class="vacant">7</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Countryside Village Apartments</div>
+          <div class="occ-value">93.4%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:93.42%"></div></div>
+          <span class="unit-count"><span class="occupied">71</span> occupied · <span class="vacant">5</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Village of Sycamore Ridge</div>
+          <div class="occ-value">93.9%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:93.86%"></div></div>
+          <span class="unit-count"><span class="occupied">107</span> occupied · <span class="vacant">7</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Hickory Hills</div>
+          <div class="occ-value">94.8%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:94.78999999999999%"></div></div>
+          <span class="unit-count"><span class="occupied">91</span> occupied · <span class="vacant">5</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Avery Park Apartments</div>
+          <div class="occ-value">95.1%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:95.07%"></div></div>
+          <span class="unit-count"><span class="occupied">106</span> occupied · <span class="vacant">6</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Ridgeway Pines Townhomes</div>
+          <div class="occ-value">95.3%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:95.35%"></div></div>
+          <span class="unit-count"><span class="occupied">82</span> occupied · <span class="vacant">4</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Lexington Apartments</div>
+          <div class="occ-value">95.6%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:95.56%"></div></div>
+          <span class="unit-count"><span class="occupied">86</span> occupied · <span class="vacant">4</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Aspen Hills</div>
+          <div class="occ-value">95.7%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:95.67999999999999%"></div></div>
+          <span class="unit-count"><span class="occupied">155</span> occupied · <span class="vacant">7</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Woodlake Apartments</div>
+          <div class="occ-value">95.9%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:95.89999999999999%"></div></div>
+          <span class="unit-count"><span class="occupied">117</span> occupied · <span class="vacant">5</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Deerfield Apartments</div>
+          <div class="occ-value">96.3%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:96.32%"></div></div>
+          <span class="unit-count"><span class="occupied">131</span> occupied · <span class="vacant">5</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Meadows of Memphis Apartments</div>
+          <div class="occ-value">96.5%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:96.5%"></div></div>
+          <span class="unit-count"><span class="occupied">193</span> occupied · <span class="vacant">7</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Ridgewyck Townhomes</div>
+          <div class="occ-value">96.7%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:96.67%"></div></div>
+          <span class="unit-count"><span class="occupied">116</span> occupied · <span class="vacant">4</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Jackson Heights Residential</div>
+          <div class="occ-value">97.0%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:96.97%"></div></div>
+          <span class="unit-count"><span class="occupied">64</span> occupied · <span class="vacant">2</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Rivergrove</div>
+          <div class="occ-value">97.1%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:97.08%"></div></div>
+          <span class="unit-count"><span class="occupied">167</span> occupied · <span class="vacant">5</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Fairway</div>
+          <div class="occ-value">97.1%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:97.1%"></div></div>
+          <span class="unit-count"><span class="occupied">67</span> occupied · <span class="vacant">2</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">The Glen Townhomes</div>
+          <div class="occ-value">97.1%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:97.1%"></div></div>
+          <span class="unit-count"><span class="occupied">134</span> occupied · <span class="vacant">4</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Coves at Yale</div>
+          <div class="occ-value">97.3%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:97.25%"></div></div>
+          <span class="unit-count"><span class="occupied">177</span> occupied · <span class="vacant">5</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Braewood</div>
+          <div class="occ-value">97.4%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:97.37%"></div></div>
+          <span class="unit-count"><span class="occupied">74</span> occupied · <span class="vacant">2</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Meadows West Memphis</div>
+          <div class="occ-value">97.5%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:97.5%"></div></div>
+          <span class="unit-count"><span class="occupied">117</span> occupied · <span class="vacant">3</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Bent Creek Apartments</div>
+          <div class="occ-value">97.7%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:97.67%"></div></div>
+          <span class="unit-count"><span class="occupied">84</span> occupied · <span class="vacant">2</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Trails at Northpointe</div>
+          <div class="occ-value">97.9%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:97.92%"></div></div>
+          <span class="unit-count"><span class="occupied">94</span> occupied · <span class="vacant">2</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Pines Apartments</div>
+          <div class="occ-value">98.8%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:98.75%"></div></div>
+          <span class="unit-count"><span class="occupied">79</span> occupied · <span class="vacant">1</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Meadow Creek (Sykes)</div>
+          <div class="occ-value">99.0%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:99.03999999999999%"></div></div>
+          <span class="unit-count"><span class="occupied">103</span> occupied · <span class="vacant">1</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Raleigh Court Townhomes</div>
+          <div class="occ-value">100.0%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:100%"></div></div>
+          <span class="unit-count"><span class="occupied">59</span> occupied · <span class="vacant">0</span> vacant</span>
+        </div>
+        <div class="occ-card tier-high">
+          <div class="prop-name">Windsor Place</div>
+          <div class="occ-value">100.0%</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:100%"></div></div>
+          <span class="unit-count"><span class="occupied">118</span> occupied · <span class="vacant">0</span> vacant</span>
+        </div></div>
+
+  <div class="section-title">Monthly Collection Progress — April 2026</div>
+  <div class="delinquency-list">
+    <div class="delq-row header-row">
+      <span>Property</span>
+      <span>Progress</span>
+      <span style="text-align:right">Collected / Charged</span>
+    </div>
+    <div id="delq-list">
+        <div class="delq-row">
+          <div class="delq-prop">Jackson Heights Residential</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:13%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">13% collected</div>
+            <div class="dollars">$9,474 / $75,049</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Hickory Pointe</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:14%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">14% collected</div>
+            <div class="dollars">$28,803 / $213,160</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Hunter Oaks Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:15%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">15% collected</div>
+            <div class="dollars">$9,774 / $68,016</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Shadowbrook Townhomes</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:16%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">16% collected</div>
+            <div class="dollars">$49,855 / $312,194</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Hickory Hills</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:17%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">17% collected</div>
+            <div class="dollars">$14,144 / $83,782</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Lexington Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:17%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">17% collected</div>
+            <div class="dollars">$13,159 / $76,713</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Fairway</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:18%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">18% collected</div>
+            <div class="dollars">$10,548 / $59,252</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Foxhaven Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:18%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">18% collected</div>
+            <div class="dollars">$16,123 / $94,205</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Colonial Village Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:19%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">19% collected</div>
+            <div class="dollars">$6,989 / $37,525</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Meadows West Memphis</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:19%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">19% collected</div>
+            <div class="dollars">$21,796 / $114,113</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Meadow Creek (Sykes)</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:20%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">20% collected</div>
+            <div class="dollars">$17,312 / $88,436</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Avery Park Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:22%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">22% collected</div>
+            <div class="dollars">$45,709 / $210,702</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Bent Creek Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:23%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">23% collected</div>
+            <div class="dollars">$16,405 / $72,612</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Hickory Forest</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:23%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">23% collected</div>
+            <div class="dollars">$56,025 / $246,107</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Deerfield Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:23%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">23% collected</div>
+            <div class="dollars">$31,365 / $136,557</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Raleigh Court Townhomes</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:24%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">24% collected</div>
+            <div class="dollars">$15,326 / $65,999</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Ridgewyck Townhomes</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:24%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">24% collected</div>
+            <div class="dollars">$31,703 / $134,332</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Windsor Place</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:24%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">24% collected</div>
+            <div class="dollars">$21,359 / $90,201</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Pines Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:25%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">25% collected</div>
+            <div class="dollars">$19,233 / $79,540</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Rivergrove</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:26%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">26% collected</div>
+            <div class="dollars">$45,508 / $177,992</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Village of Sycamore Ridge</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:27%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">27% collected</div>
+            <div class="dollars">$33,143 / $125,413</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Coves at Yale</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:29%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">29% collected</div>
+            <div class="dollars">$44,450 / $154,834</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Countryside Village Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:31%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">31% collected</div>
+            <div class="dollars">$24,335 / $79,905</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Briarcliff South</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:33%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">33% collected</div>
+            <div class="dollars">$23,417 / $70,707</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Trails at Northpointe</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:35%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">35% collected</div>
+            <div class="dollars">$51,578 / $147,649</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Woodlake Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:36%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">36% collected</div>
+            <div class="dollars">$34,626 / $95,384</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Collier Village Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:37%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">37% collected</div>
+            <div class="dollars">$44,367 / $120,464</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Ridgeway Pines Townhomes</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:38%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">38% collected</div>
+            <div class="dollars">$29,327 / $78,039</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Meadows of Memphis Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:38%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">38% collected</div>
+            <div class="dollars">$85,860 / $229,503</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Shadowood Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:39%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">39% collected</div>
+            <div class="dollars">$34,098 / $86,944</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">High Grove Apartments</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:43%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">43% collected</div>
+            <div class="dollars">$46,322 / $115,627</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">The Glen Townhomes</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:45%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">45% collected</div>
+            <div class="dollars">$69,517 / $153,902</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Willow Glen</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:45%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">45% collected</div>
+            <div class="dollars">$13,020 / $30,138</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Braewood</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:49%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">49% collected</div>
+            <div class="dollars">$53,463 / $110,125</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Aspen Hills</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:51%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">51% collected</div>
+            <div class="dollars">$118,171 / $238,289</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Fairbrook</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:55%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">55% collected</div>
+            <div class="dollars">$28,166 / $52,819</div>
+          </div>
+        </div>
+        <div class="delq-row">
+          <div class="delq-prop">Linden Colonial</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill fill-danger" style="width:59%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">59% collected</div>
+            <div class="dollars">$82,119 / $142,624</div>
+          </div>
+        </div></div>
+  </div>
+
+  <script>
+    // ── OCCUPANCY DATA (April 2026 Ending Occupancy) ──────────────────────────
+    // Source: Daily Occupancy Dashboard.csv, 04/01/2026–04/30/2026 Ending Occupancy
+    // total = total unit count for property
+    const occupancy = [
+      { name: "Aspen Hills",                    occ: 0.9568, total: 162 },
+      { name: "Avery Park Apartments",           occ: 0.9507, total: 112 },
+      { name: "Bent Creek Apartments",           occ: 0.9767, total: 86 },
+      { name: "Braewood",                        occ: 0.9737, total: 76 },
+      { name: "Briarcliff South",                occ: 0.8077, total: 104 },
+      { name: "Collier Village Apartments",      occ: 0.9300, total: 100 },
+      { name: "Colonial Village Apartments",     occ: 0.8250, total: 40 },
+      { name: "Countryside Village Apartments",  occ: 0.9342, total: 76 },
+      { name: "Coves at Yale",                   occ: 0.9725, total: 182 },
+      { name: "Deerfield Apartments",            occ: 0.9632, total: 136 },
+      { name: "Fairbrook",                       occ: 0.7727, total: 44 },
+      { name: "Fairway",                         occ: 0.9710, total: 69 },
+      { name: "Foxhaven Apartments",             occ: 0.9167, total: 96 },
+      { name: "Hickory Forest",                  occ: 0.9261, total: 229 },
+      { name: "Hickory Hills",                   occ: 0.9479, total: 96 },
+      { name: "Hickory Pointe",                  occ: 0.9125, total: 160 },
+      { name: "High Grove Apartments",           occ: 0.8900, total: 100 },
+      { name: "Hunter Oaks Apartments",          occ: 0.9211, total: 63 },
+      { name: "Jackson Heights Residential",     occ: 0.9697, total: 66 },
+      { name: "Lexington Apartments",            occ: 0.9556, total: 90 },
+      { name: "Linden Colonial",                 occ: 0.9074, total: 108 },
+      { name: "Meadow Creek (Sykes)",            occ: 0.9904, total: 104 },
+      { name: "Meadows of Memphis Apartments",   occ: 0.9650, total: 200 },
+      { name: "Meadows West Memphis",            occ: 0.9750, total: 120 },
+      { name: "Pines Apartments",                occ: 0.9875, total: 80 },
+      { name: "Raleigh Court Townhomes",         occ: 1.0000, total: 59 },
+      { name: "Ridgeway Pines Townhomes",        occ: 0.9535, total: 86 },
+      { name: "Ridgewyck Townhomes",             occ: 0.9667, total: 120 },
+      { name: "Rivergrove",                      occ: 0.9708, total: 172 },
+      { name: "Shadowbrook Townhomes",           occ: 0.9071, total: 417 },
+      { name: "Shadowood Apartments",            occ: 0.9125, total: 80 },
+      { name: "The Glen Townhomes",              occ: 0.9710, total: 138 },
+      { name: "Trails at Northpointe",           occ: 0.9792, total: 96 },
+      { name: "Village of Sycamore Ridge",       occ: 0.9386, total: 114 },
+      { name: "Willow Glen",                     occ: 0.9167, total: 24 },
+      { name: "Windsor Place",                   occ: 1.0000, total: 118 },
+      { name: "Woodlake Apartments",             occ: 0.9590, total: 122 },
+    ];
+
+    // ── DELINQUENCY DATA (April 2026) ─────────────────────────────────────────
+    // Source: Daily Delinquency Dashboard.csv
+    // charged = Current Year - Total Charges
+    // collected = Current Year - Collections
+    // pct = Current Year - % Collected
+    const delinquency = [
+      { name: "Aspen Hills",                    charged: 238288.71, collected: 118171.04, pct: 0.5055 },
+      { name: "Avery Park Apartments",           charged: 210701.85, collected:  45708.79, pct: 0.2194 },
+      { name: "Bent Creek Apartments",           charged:  72612.40, collected:  16405.00, pct: 0.2275 },
+      { name: "Braewood",                        charged: 110125.13, collected:  53462.57, pct: 0.4936 },
+      { name: "Briarcliff South",                charged:  70706.54, collected:  23416.86, pct: 0.3334 },
+      { name: "Collier Village Apartments",      charged: 120463.80, collected:  44366.50, pct: 0.3733 },
+      { name: "Colonial Village Apartments",     charged:  37524.55, collected:   6988.90, pct: 0.1921 },
+      { name: "Countryside Village Apartments",  charged:  79905.00, collected:  24334.56, pct: 0.3081 },
+      { name: "Coves at Yale",                   charged: 154833.95, collected:  44450.45, pct: 0.2874 },
+      { name: "Deerfield Apartments",            charged: 136557.30, collected:  31365.00, pct: 0.2303 },
+      { name: "Fairbrook",                       charged:  52819.12, collected:  28165.90, pct: 0.5523 },
+      { name: "Fairway",                         charged:  59252.25, collected:  10548.23, pct: 0.1780 },
+      { name: "Foxhaven Apartments",             charged:  94205.00, collected:  16123.32, pct: 0.1824 },
+      { name: "Hickory Forest",                  charged: 246107.00, collected:  56024.95, pct: 0.2278 },
+      { name: "Hickory Hills",                   charged:  83782.30, collected:  14143.80, pct: 0.1711 },
+      { name: "Hickory Pointe",                  charged: 213160.40, collected:  28803.36, pct: 0.1359 },
+      { name: "High Grove Apartments",           charged: 115626.80, collected:  46322.30, pct: 0.4256 },
+      { name: "Hunter Oaks Apartments",          charged:  68015.60, collected:   9774.00, pct: 0.1461 },
+      { name: "Jackson Heights Residential",     charged:  75048.70, collected:   9474.01, pct: 0.1284 },
+      { name: "Lexington Apartments",            charged:  76712.80, collected:  13158.96, pct: 0.1737 },
+      { name: "Linden Colonial",                 charged: 142623.91, collected:  82119.05, pct: 0.5880 },
+      { name: "Meadow Creek (Sykes)",            charged:  88436.30, collected:  17312.28, pct: 0.1971 },
+      { name: "Meadows of Memphis Apartments",   charged: 229503.40, collected:  85860.35, pct: 0.3788 },
+      { name: "Meadows West Memphis",            charged: 114113.25, collected:  21795.77, pct: 0.1921 },
+      { name: "Pines Apartments",                charged:  79539.65, collected:  19233.43, pct: 0.2476 },
+      { name: "Raleigh Court Townhomes",         charged:  65998.65, collected:  15325.91, pct: 0.2363 },
+      { name: "Ridgeway Pines Townhomes",        charged:  78038.65, collected:  29327.23, pct: 0.3767 },
+      { name: "Ridgewyck Townhomes",             charged: 134332.40, collected:  31703.12, pct: 0.2366 },
+      { name: "Rivergrove",                      charged: 177991.65, collected:  45507.62, pct: 0.2598 },
+      { name: "Shadowbrook Townhomes",           charged: 312193.51, collected:  49855.18, pct: 0.1634 },
+      { name: "Shadowood Apartments",            charged:  86944.25, collected:  34097.65, pct: 0.3927 },
+      { name: "The Glen Townhomes",              charged: 153902.45, collected:  69517.02, pct: 0.4523 },
+      { name: "Trails at Northpointe",           charged: 147649.20, collected:  51578.14, pct: 0.3532 },
+      { name: "Village of Sycamore Ridge",       charged: 125412.65, collected:  33143.29, pct: 0.2730 },
+      { name: "Willow Glen",                     charged:  30137.94, collected:  13020.14, pct: 0.4523 },
+      { name: "Windsor Place",                   charged:  90200.50, collected:  21359.06, pct: 0.2368 },
+      { name: "Woodlake Apartments",             charged:  95383.90, collected:  34625.82, pct: 0.3630 },
+    ];
+
+    // ── HELPERS ───────────────────────────────────────────────────────────────
+    const pct = n => (n * 100).toFixed(1) + '%';
+    const fmt = n => '$' + Math.round(n).toLocaleString();
+
+    function tierClass(o) {
+      if (o >= 0.93) return 'tier-high';
+      if (o >= 0.85) return 'tier-mid';
+      return 'tier-low';
+    }
+    function fillClass(p) {
+      if (p >= 0.90) return 'fill-good';
+      if (p >= 0.75) return 'fill-warn';
+      return 'fill-danger';
+    }
+    function unitInfo(p) {
+      const occupied = Math.round(p.total * p.occ);
+      const vacant = p.total - occupied;
+      return `<span class="unit-count"><span class="occupied">${occupied}</span> occupied · <span class="vacant">${vacant}</span> vacant</span>`;
+    }
+
+    // ── AS OF TIMESTAMP ───────────────────────────────────────────────────────
+    const now = new Date();
+    const asOfStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      + ' at ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    document.getElementById('as-of').textContent = 'Data as of ' + asOfStr;
+
+    // ── SUMMARY ───────────────────────────────────────────────────────────────
+    const avgOcc = occupancy.reduce((s, p) => s + p.occ, 0) / occupancy.length;
+    const totalCharged   = delinquency.reduce((s, p) => s + p.charged, 0);
+    const totalCollected = delinquency.reduce((s, p) => s + p.collected, 0);
+    const totalOutstanding = totalCharged - totalCollected;
+    const portfolioPct = totalCollected / totalCharged;
+
+    document.getElementById('summary').innerHTML = `
+      <div class="summary-card">
+        <div class="label">Portfolio Occupancy</div>
+        <div class="value">${pct(avgOcc)}</div>
+        <div class="sub">across ${occupancy.length} properties</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Charges Posted</div>
+        <div class="value">${fmt(totalCharged)}</div>
+        <div class="sub">April 2026</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Collected</div>
+        <div class="value">${fmt(totalCollected)}</div>
+        <div class="sub">${pct(portfolioPct)} of charges</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">Outstanding</div>
+        <div class="value">${fmt(totalOutstanding)}</div>
+        <div class="sub">${pct(1 - portfolioPct)} remaining</div>
+      </div>`;
+
+    // ── WATCHLIST ─────────────────────────────────────────────────────────────
+    // Score each property: average of occupancy + collection %, lower = worse
+    const scored = occupancy.map(op => {
+      const dp = delinquency.find(d => d.name === op.name);
+      const collPct = dp ? dp.pct : 1;
+      const score = (op.occ + collPct) / 2;
+      return { name: op.name, occ: op.occ, collPct, score };
+    });
+    const watchlist = scored.sort((a, b) => a.score - b.score).slice(0, 5);
+    const wEl = document.getElementById('watchlist');
+    const ranks = ['#1 Worst', '#2', '#3', '#4', '#5'];
+    watchlist.forEach((p, i) => {
+      const lowOcc = p.occ < 0.90;
+      const lowCol = p.collPct < 0.90;
+      const tagClass = (lowOcc && lowCol) ? 'both' : lowOcc ? 'occ' : 'col';
+      const tagText  = (lowOcc && lowCol) ? 'Occ + Collections' : lowOcc ? 'Low Occupancy' : 'Low Collections';
+      const occClass  = p.occ < 0.85 ? 'bad' : p.occ < 0.93 ? 'warn' : '';
+      const colClass  = p.collPct < 0.80 ? 'bad' : p.collPct < 0.90 ? 'warn' : '';
+      wEl.innerHTML += `
+        <div class="watch-card">
+          <div class="watch-rank">${ranks[i]}</div>
+          <div class="watch-name">${p.name}</div>
+          <div class="watch-metrics">
+            <div class="watch-metric">
+              <span class="m-label">Occupancy</span>
+              <span class="m-val ${occClass}">${pct(p.occ)}</span>
+            </div>
+            <div class="watch-metric">
+              <span class="m-label">Collected</span>
+              <span class="m-val ${colClass}">${pct(p.collPct)}</span>
+            </div>
+          </div>
+          <span class="watch-tag ${tagClass}">${tagText}</span>
+        </div>`;
+    });
+
+    // ── OCCUPANCY CARDS ───────────────────────────────────────────────────────
+    const grid = document.getElementById('occ-grid');
+    const sortedOcc = [...occupancy].sort((a, b) => a.occ - b.occ);
+    sortedOcc.forEach(p => {
+      const tier = tierClass(p.occ);
+      grid.innerHTML += `
+        <div class="occ-card ${tier}">
+          <div class="prop-name">${p.name}</div>
+          <div class="occ-value">${pct(p.occ)}</div>
+          <div class="occ-bar-bg"><div class="occ-bar-fill" style="width:${p.occ*100}%"></div></div>
+          ${unitInfo(p)}
+        </div>`;
+    });
+
+    // ── DELINQUENCY BARS ──────────────────────────────────────────────────────
+    // Sort: worst collection % first
+    const sorted = [...delinquency].sort((a, b) => a.pct - b.pct);
+    const list = document.getElementById('delq-list');
+    sorted.forEach(p => {
+      const fillPct = Math.round(p.pct * 100);
+      list.innerHTML += `
+        <div class="delq-row">
+          <div class="delq-prop">${p.name}</div>
+          <div class="delq-bar-wrap">
+            <div class="delq-bar-fill ${fillClass(p.pct)}" style="width:${fillPct}%"></div>
+          </div>
+          <div class="delq-amounts">
+            <div class="pct">${fillPct}% collected</div>
+            <div class="dollars">${fmt(p.collected)} / ${fmt(p.charged)}</div>
+          </div>
+        </div>`;
+    });
+  </script>
+
+
+
+</body></html>
